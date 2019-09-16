@@ -324,6 +324,7 @@ static int aw22xxx_chip_enable(struct aw22xxx *aw22xxx, bool flag)
     if(flag) {
         aw22xxx_i2c_write_bits(aw22xxx, REG_GCR,
                 BIT_GCR_CHIPEN_MASK, BIT_GCR_CHIPEN_ENABLE);
+        msleep(2);
     } else {
         aw22xxx_i2c_write_bits(aw22xxx, REG_GCR,
                 BIT_GCR_CHIPEN_MASK, BIT_GCR_CHIPEN_DISABLE);
@@ -350,6 +351,7 @@ static int aw22xxx_mcu_reset(struct aw22xxx *aw22xxx, bool flag)
     if(flag) {
         aw22xxx_i2c_write_bits(aw22xxx, REG_MCUCTR,
                 BIT_MCUCTR_MCU_RESET_MASK, BIT_MCUCTR_MCU_RESET_ENABLE);
+        msleep(2);
     } else {
         aw22xxx_i2c_write_bits(aw22xxx, REG_MCUCTR,
                 BIT_MCUCTR_MCU_RESET_MASK, BIT_MCUCTR_MCU_RESET_DISABLE);
@@ -362,6 +364,7 @@ static int aw22xxx_mcu_enable(struct aw22xxx *aw22xxx, bool flag)
     if(flag) {
         aw22xxx_i2c_write_bits(aw22xxx, REG_MCUCTR,
                 BIT_MCUCTR_MCU_WORK_MASK, BIT_MCUCTR_MCU_WORK_ENABLE);
+        msleep(2);
     } else {
         aw22xxx_i2c_write_bits(aw22xxx, REG_MCUCTR,
                 BIT_MCUCTR_MCU_WORK_MASK, BIT_MCUCTR_MCU_WORK_DISABLE);
@@ -1017,7 +1020,7 @@ static void aw22xxx_cfg_work_routine(struct work_struct *work)
 static int aw22xxx_fw_init(struct aw22xxx *aw22xxx)
 {
 #ifdef AWINIC_FW_UPDATE_DELAY
-    int fw_timer_val = 10000;
+    int fw_timer_val = 4000;
 
     hrtimer_init(&aw22xxx->fw_timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
     aw22xxx->fw_timer.function = aw22xxx_fw_timer_func;
