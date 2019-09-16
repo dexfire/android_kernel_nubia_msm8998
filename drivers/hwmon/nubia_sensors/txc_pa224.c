@@ -1129,7 +1129,7 @@ static void pa224_work_func_irq(struct work_struct *work)
 	data = container_of((struct work_struct *)work, struct pa224_data, irq_dwork);
 	client = data->client;
 	/* Add Oil Alg */
-	wake_lock_timeout(&data->pa224_wake_lock, msecs_to_jiffies(1000));
+	wake_lock_timeout(&data->pa224_wake_lock, msecs_to_jiffies(100));
 	pa224_check_intr(client);
 }
 
@@ -1138,7 +1138,7 @@ static irqreturn_t pa224_irq(int irq, void *handle)
 	struct pa224_data *data = handle;
 	struct i2c_client *client = data->client;
 
-	wake_lock_timeout(&data->pa224_wake_lock, msecs_to_jiffies(1000));
+	wake_lock_timeout(&data->pa224_wake_lock, msecs_to_jiffies(100));
 	pa224_check_intr(client);
 
 	return IRQ_HANDLED;
@@ -1227,13 +1227,13 @@ static struct miscdevice pa224_ps_device = {
 /*Suspend/Resume*/
 static int pa224_suspend(struct device *dev)
 {
-	SENSOR_LOG_ERROR("suspend\n");
+	SENSOR_LOG_INFO("suspend\n");
 	return 0;
 }
 
 static int pa224_resume(struct device *dev)
 {
-	SENSOR_LOG_ERROR("resume\n");
+	SENSOR_LOG_INFO("resume\n");
 	return 0;
 }
 

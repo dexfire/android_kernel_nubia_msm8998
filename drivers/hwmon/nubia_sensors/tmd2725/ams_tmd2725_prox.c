@@ -238,6 +238,7 @@ static void tmd2725_get_prox(struct tmd2725_chip *chip)
 static void tmd2725_report_prox(struct tmd2725_chip *chip)
 {
 	if (chip->p_idev) {
+		SENSOR_LOG_INFO("detect:%d,last:%d\n",chip->prx_inf.detected,chip->prx_inf.last_detected );
 		if (chip->prx_inf.detected != chip->prx_inf.last_detected) {
 			input_report_rel(chip->p_idev, REL_RZ, chip->prx_inf.detected);
 			input_sync(chip->p_idev);
@@ -246,6 +247,8 @@ static void tmd2725_report_prox(struct tmd2725_chip *chip)
 				chip->prx_inf.detected);
 			chip->prx_inf.last_detected = chip->prx_inf.detected;
 		}
+		SENSOR_LOG_INFO("tmd2725_report_prox yxc \n");
+		return ;
 	}
 }
 /*
