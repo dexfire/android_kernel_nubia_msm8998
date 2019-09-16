@@ -48,7 +48,7 @@
 #define PPC_WITH_CHECKSUM			0x010c8400
 #define PPC_DRIVER_VERSION			0x00000200
 
-#define TAS2555_CAL_NAME    "/persist/tas2555_cal.bin"
+#define TAS2555_CAL_NAME    "/data/vendor/audio/tas2555_cal.bin"
 
 //set default PLL CLKIN to GPI2 (MCLK) = 0x00
 #define TAS2555_DEFAULT_PLL_CLKIN 0x00
@@ -1192,6 +1192,7 @@ err:
 static int tas2555_load_block(struct tas2555_priv *pTAS2555, struct TBlock * pBlock)
 {
 	int nResult = 0;
+	unsigned int n; //nubia modify for smartPA OCP and speaker no sound
 	int nRetry = 6;
 	unsigned int nCommand = 0;
 	unsigned char nBook;
@@ -1280,6 +1281,26 @@ start:
 				nCommand += ((nLength - 2) / 4) + 1;
 		}
 	}
+
+	//nubia modify for smartPA OCP and speaker no sound start
+	nResult = pTAS2555->read(pTAS2555, TAS2555_SPK_CTRL_REG, &n);
+	if (nResult < 0) {
+		dev_err(pTAS2555->dev, "read TAS2555_SPK_CTRL_REG failed\n");
+	} else
+		dev_info(pTAS2555->dev, "read TAS2555_SPK_CTRL_REG: 0x%02x\n", n);
+
+	nResult = pTAS2555->write(pTAS2555, TAS2555_SPK_CTRL_REG, 0x7a);
+	if (nResult < 0) {
+		dev_err(pTAS2555->dev, "write TAS2555_SPK_CTRL_REG failed\n");
+	} else
+		dev_info(pTAS2555->dev, "write TAS2555_SPK_CTRL_REG: 0x7a\n");
+
+	nResult = pTAS2555->read(pTAS2555, TAS2555_SPK_CTRL_REG, &n);
+	if (nResult < 0) {
+		dev_err(pTAS2555->dev, "read TAS2555_SPK_CTRL_REG failed\n");
+	} else
+		dev_info(pTAS2555->dev, "read TAS2555_SPK_CTRL_REG: 0x%02x\n", n);
+	//nubia modify for smartPA OCP and speaker no sound end
 
 	if (pBlock->mbPChkSumPresent) {
 		pTAS2555->read(pTAS2555, TAS2555_CRC_CHECKSUM_REG, &nValue);
