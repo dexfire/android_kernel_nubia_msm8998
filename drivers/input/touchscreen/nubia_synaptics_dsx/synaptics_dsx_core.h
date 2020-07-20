@@ -405,6 +405,9 @@ struct synaptics_rmi4_data {
 	unsigned short f01_ctrl_base_addr;
 	unsigned short f01_data_base_addr;
 	unsigned int firmware_id;
+#ifdef CONFIG_TOUCHSCREEN_NUBIA_SYNAPTICS_DSX_ANTI_MISSING
+    unsigned int anti_missing_dp;
+#endif
 	int irq;
 	int sensor_max_x;
 	int sensor_max_y;

@@ -192,6 +192,14 @@ static ssize_t synaptics_rmi4_0dbutton_show(struct device *dev,
 static ssize_t synaptics_rmi4_0dbutton_store(struct device *dev,
 		struct device_attribute *attr, const char *buf, size_t count);
 
+#ifdef CONFIG_TOUCHSCREEN_NUBIA_SYNAPTICS_DSX_ANTI_MISSING
+static ssize_t synaptics_rmi4_anti_missing_dp_show(struct device *dev,
+		struct device_attribute *attr, char *buf);
+
+static ssize_t synaptics_rmi4_anti_missing_dp_store(struct device *dev,
+		struct device_attribute *attr, const char *buf, size_t count);
+#endif
+
 #ifdef NUBIA_TOUCH_SYNAPTICS
 static ssize_t synaptics_rmi4_home_show(struct device *dev,
 		struct device_attribute *attr, char *buf);
@@ -678,6 +686,11 @@ static struct device_attribute attrs[] = {
 	__ATTR(0dbutton, (S_IRUGO | S_IWUSR),
 			synaptics_rmi4_0dbutton_show,
 			synaptics_rmi4_0dbutton_store),
+#ifdef CONFIG_TOUCHSCREEN_NUBIA_SYNAPTICS_DSX_ANTI_MISSING
+    __ATTR(anti_missing_dp, (S_IRUGO | S_IWUSR),
+			synaptics_rmi4_anti_missing_dp_show,
+			synaptics_rmi4_anti_missing_dp_store),
+#endif
 	__ATTR(suspend, S_IWUSR,
 			synaptics_rmi4_show_error,
 			synaptics_rmi4_suspend_store),
@@ -813,6 +826,17 @@ static ssize_t synaptics_rmi4_0dbutton_show(struct device *dev,
 	return snprintf(buf, PAGE_SIZE, "%u\n",
 			rmi4_data->button_0d_enabled);
 }
+
+#ifdef CONFIG_TOUCHSCREEN_NUBIA_SYNAPTICS_DSX_ANTI_MISSING
+static ssize_t synaptics_rmi4_anti_missing_dp_show(struct device *dev,
+		struct device_attribute *attr, char *buf)
+{
+	struct synaptics_rmi4_data *rmi4_data = dev_get_drvdata(dev);
+
+	return snprintf(buf, PAGE_SIZE, "%u\n",
+			rmi4_data->anti_missing_dp);
+}
+#endif
 
 #ifdef NUBIA_TOUCH_SYNAPTICS
 static ssize_t synaptics_rmi4_home_show(struct device *dev,
@@ -1029,6 +1053,22 @@ static ssize_t synaptics_rmi4_0dbutton_store(struct device *dev,
 
 	return count;
 }
+
+#ifdef CONFIG_TOUCHSCREEN_NUBIA_SYNAPTICS_DSX_ANTI_MISSING
+static ssize_t synaptics_rmi4_anti_missing_dp_store(struct device *dev,
+		struct device_attribute *attr, const char *buf, size_t count)
+{
+	unsigned int input;
+	struct synaptics_rmi4_data *rmi4_data = dev_get_drvdata(dev);
+	if (sscanf(buf, "%u", &input) != 1)
+		return -EINVAL;
+	input = input > 0 ? input < 1080 ? input : 1080 : 0;
+	if (rmi4_data->anti_missing_dp == input)
+		return count;
+	rmi4_data->anti_missing_dp = input;
+	return count;
+}
+#endif
 
 static ssize_t synaptics_rmi4_suspend_store(struct device *dev,
 		struct device_attribute *attr, const char *buf, size_t count)
@@ -1384,6 +1424,26 @@ static int synaptics_rmi4_f11_abs_report(struct synaptics_rmi4_data *rmi4_data,
 			if (rmi4_data->hw_if->board_data->y_flip)
 				y = rmi4_data->sensor_max_y - y;
 
+#ifdef CONFIG_TOUCHSCREEN_NUBIA_SYNAPTICS_DSX_ANTI_MISSING
+			if ((x >= 0) && 
+                ((x < rmi4_data->anti_missing_dp) || 
+                (x > (1080 - rmi4_data->anti_missing_dp)))) {
+#ifdef TYPE_B_PROTOCOL
+				/*
+				* Each 2-bit finger status field represents the following:
+				* 00 = finger not present
+				* 01 = finger present and data accurate
+				* 10 = finger present but data may be inaccurate
+				* 11 = reserved
+				*/
+				input_mt_slot(rmi4_data->input_dev, finger);
+				input_mt_report_slot_state(rmi4_data->input_dev,
+						MT_TOOL_FINGER, 0);
+#endif
+				continue;
+            }
+#endif
+
 			input_report_key(rmi4_data->input_dev,
 					BTN_TOUCH, 1);
 			input_report_key(rmi4_data->input_dev,
@@ -1623,6 +1683,25 @@ static int synaptics_rmi4_f12_abs_report(struct synaptics_rmi4_data *rmi4_data,
 					MT_TOOL_FINGER, 1);
 #endif
 
+#ifdef CONFIG_TOUCHSCREEN_NUBIA_SYNAPTICS_DSX_ANTI_MISSING
+			if ((x >= 0) && 
+                ((x < rmi4_data->anti_missing_dp) || 
+                (x > (1080 - rmi4_data->anti_missing_dp)))) {
+#ifdef TYPE_B_PROTOCOL
+				/*
+				* Each 2-bit finger status field represents the following:
+				* 00 = finger not present
+				* 01 = finger present and data accurate
+				* 10 = finger present but data may be inaccurate
+				* 11 = reserved
+				*/
+				input_mt_slot(rmi4_data->input_dev, finger);
+				input_mt_report_slot_state(rmi4_data->input_dev,
+						MT_TOOL_FINGER, 0);
+#endif
+				continue;
+            }
+#endif
 			input_report_key(rmi4_data->input_dev,
 					BTN_TOUCH, 1);
 			input_report_key(rmi4_data->input_dev,
@@ -4456,6 +4535,10 @@ static int synaptics_rmi4_probe(struct platform_device *pdev)
 	rmi4_data->palm_sleep = false;
 #endif
 
+#ifdef CONFIG_TOUCHSCREEN_NUBIA_SYNAPTICS_DSX_ANTI_MISSING
+    rmi4_data->anti_missing_dp = 20;
+#endif
+    
 	rmi4_data->reset_device = synaptics_rmi4_reset_device;
 	rmi4_data->irq_enable = synaptics_rmi4_irq_enable;
 	rmi4_data->sleep_enable = synaptics_rmi4_sleep_enable;

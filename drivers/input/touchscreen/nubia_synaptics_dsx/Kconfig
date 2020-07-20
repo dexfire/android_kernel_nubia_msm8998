@@ -116,4 +116,11 @@ config TOUCHSCREEN_NUBIA_USER_TP_UPDATE
         bool "nubia tp user update module"
         default n
 
+config TOUCHSCREEN_NUBIA_SYNAPTICS_DSX_ANTI_MISSING
+	bool "Synaptics DSX anti missing support"
+	default n
+	depends on TOUCHSCREEN_NUBIA_SYNAPTICS_DSX_CORE
+	help
+	  Say Y here to enable support for anti missing keys.
+
 endif
