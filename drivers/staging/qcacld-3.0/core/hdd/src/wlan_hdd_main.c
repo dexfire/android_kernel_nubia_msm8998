@@ -423,7 +423,6 @@ static bool hdd_wait_for_recovery_completion(void)
 }
 #endif
 
-
 static int __hdd_netdev_notifier_call(struct notifier_block *nb,
 				    unsigned long state, void *data)
 {

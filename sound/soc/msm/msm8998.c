@@ -4285,6 +4285,114 @@ static int msm_afe_set_config(struct snd_soc_codec *codec)
 	return 0;
 }
 
+	if (gpio_is_valid(pdata->swap_en1_gpio))
+		gpio_free(pdata->swap_en1_gpio);
+
+	return ret;
+}
+
+static bool msm_swap_set(struct snd_soc_codec *codec, int value1, int value2)
+{
+	struct snd_soc_card *card = codec->component.card;
+	struct msm_asoc_mach_data *pdata =
+				snd_soc_card_get_drvdata(card);
+	int ret = 0;
+
+	dev_dbg(card->dev, "%s: set value1 is %d and value2 is %d", __func__, value1, value2);
+
+	if (gpio_is_valid(pdata->swap_en0_gpio)) {
+		ret = gpio_direction_output(pdata->swap_en0_gpio, value1);
+		if (ret) {
+			dev_dbg(card->dev, "%s: set swap_en0_gpio failed", __func__);
+		}
+		dev_dbg(card->dev, "%s: current swap_en0_gpio is %d\n", __func__, gpio_get_value(pdata->swap_en0_gpio));
+	}
+
+	if (gpio_is_valid(pdata->swap_en1_gpio)) {
+		ret = gpio_direction_output(pdata->swap_en1_gpio, value2);
+		if (ret) {
+			dev_dbg(card->dev, "%s: set swap_en1_gpio failed", __func__);
+		}
+		dev_dbg(card->dev, "%s: current swap_en1_gpio is %d\n", __func__, gpio_get_value(pdata->swap_en1_gpio));
+	}
+
+	return true;
+}
+#endif
+#if 0
+static bool msm_swap_gnd_mic(struct snd_soc_codec *codec, int value1, int value2 )
+{
+	struct snd_soc_card *card = codec->component.card;
+	struct msm_asoc_mach_data *pdata =
+				snd_soc_card_get_drvdata(card);
+	int value;
+
+	if (pdata->us_euro_gpio_p) {
+		value = msm_cdc_pinctrl_get_state(pdata->us_euro_gpio_p);
+		if (value)
+			msm_cdc_pinctrl_select_sleep_state(
+							pdata->us_euro_gpio_p);
+		else
+			msm_cdc_pinctrl_select_active_state(
+							pdata->us_euro_gpio_p);
+	} else if (pdata->us_euro_gpio >= 0) {
+		value = gpio_get_value_cansleep(pdata->us_euro_gpio);
+		gpio_set_value_cansleep(pdata->us_euro_gpio, !value);
+	}
+	pr_debug("%s: swap select switch %d to %d\n", __func__, value, !value);
+	return true;
+}
+#endif
+
+static int msm_afe_set_config(struct snd_soc_codec *codec)
+{
+	int ret = 0;
+	void *config_data = NULL;
+
+	if (!msm_codec_fn.get_afe_config_fn) {
+		dev_err(codec->dev, "%s: codec get afe config not init'ed\n",
+			__func__);
+		return -EINVAL;
+	}
+
+	config_data = msm_codec_fn.get_afe_config_fn(codec,
+			AFE_CDC_REGISTERS_CONFIG);
+	if (config_data) {
+		ret = afe_set_config(AFE_CDC_REGISTERS_CONFIG, config_data, 0);
+		if (ret) {
+			dev_err(codec->dev,
+				"%s: Failed to set codec registers config %d\n",
+				__func__, ret);
+			return ret;
+		}
+	}
+
+	config_data = msm_codec_fn.get_afe_config_fn(codec,
+			AFE_CDC_REGISTER_PAGE_CONFIG);
+	if (config_data) {
+		ret = afe_set_config(AFE_CDC_REGISTER_PAGE_CONFIG, config_data,
+				    0);
+		if (ret)
+			dev_err(codec->dev,
+				"%s: Failed to set cdc register page config\n",
+				__func__);
+	}
+
+	config_data = msm_codec_fn.get_afe_config_fn(codec,
+			AFE_SLIMBUS_SLAVE_CONFIG);
+	if (config_data) {
+		ret = afe_set_config(AFE_SLIMBUS_SLAVE_CONFIG, config_data, 0);
+		if (ret) {
+			dev_err(codec->dev,
+				"%s: Failed to set slimbus slave config %d\n",
+				__func__, ret);
+			return ret;
+		}
+	}
+
+	return 0;
+}
+
 static void msm_afe_clear_config(void)
 {
 	afe_clear_config(AFE_CDC_REGISTERS_CONFIG);
@@ -4680,6 +4788,16 @@ static void *def_tavil_mbhc_cal(void)
 	btn_high = ((void *)&btn_cfg->_v_btn_low) +
 		(sizeof(btn_cfg->_v_btn_low[0]) * btn_cfg->num_btn);
 
+#ifdef CONFIG_ZTEMT_AUDIO
+	btn_high[0] = 110;
+	btn_high[1] = 240;
+	btn_high[2] = 437;
+	btn_high[3] = 437;
+	btn_high[4] = 437;
+	btn_high[5] = 437;
+	btn_high[6] = 437;
+	btn_high[7] = 437;
+#else
 	btn_high[0] = 75;
 	btn_high[1] = 150;
 	btn_high[2] = 237;
@@ -4688,6 +4806,7 @@ static void *def_tavil_mbhc_cal(void)
 	btn_high[5] = 500;
 	btn_high[6] = 500;
 	btn_high[7] = 500;
+#endif
 
 	return tavil_wcd_cal;
 }

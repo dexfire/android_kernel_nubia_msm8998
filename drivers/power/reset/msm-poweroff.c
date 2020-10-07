@@ -256,6 +256,14 @@ void msm_set_dload_mode(int mode)
 EXPORT_SYMBOL(msm_set_dload_mode);
 #endif
 
+#ifdef CONFIG_NUBIA_INPUT_KEYRESET
+void msm_set_dload_mode(int mode)
+{
+	download_mode = mode;
+}
+EXPORT_SYMBOL(msm_set_dload_mode);
+#endif
+
 /*
  * Force the SPMI PMIC arbiter to shutdown so that no more SPMI transactions
  * are sent from the MSM to the PMIC.  This is required in order to avoid an
@@ -327,6 +335,10 @@ static void msm_restart_prepare(const char *cmd)
 	need_warm_reset = true;
 #endif
 
+#ifdef CONFIG_NUBIA_PANIC_BOOTMODE
+	printk(KERN_EMERG "nubia: %s:%d: need_warm_reset=%s \n",__func__,__LINE__,need_warm_reset==true?"true":"false");
+#endif
+
 	/* Hard reset the PMIC unless memory contents must be maintained. */
 	if (need_warm_reset) {
 		qpnp_pon_system_pwr_off(PON_POWER_OFF_WARM_RESET);
@@ -389,6 +401,12 @@ static void msm_restart_prepare(const char *cmd)
 			__raw_writel(0x77665501, restart_reason);
 		}
 	}
+#ifdef CONFIG_NUBIA_PANIC_BOOTMODE
+	if (in_panic && !get_dload_mode()) {
+		printk(KERN_EMERG "set panic reboot reason=%x,download_mode=%x,need_warm_reset=%x\n",PON_RESTART_REASON_PANIC,download_mode,need_warm_reset);
+		qpnp_pon_set_restart_reason(PON_RESTART_REASON_PANIC);
+	}
+#endif
 
 #ifdef CONFIG_NUBIA_PANIC_BOOTMODE
 	if (in_panic) {

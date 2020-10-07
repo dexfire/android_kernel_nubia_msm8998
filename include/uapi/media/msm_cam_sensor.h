@@ -428,9 +428,9 @@ enum msm_actuator_cfg_type_t {
 	CFG_ACTUATOR_POWERDOWN,
 	CFG_ACTUATOR_POWERUP,
 	CFG_ACTUATOR_INIT,
-      // ZTEMT: fuyipeng add for AF -----start
-      CFG_SET_ACTUATOR_NAME,
-      // ZTEMT: fuyipeng add for AF -----end
+	// ZTEMT: fuyipeng add for AF -----start
+	CFG_SET_ACTUATOR_NAME,
+	// ZTEMT: fuyipeng add for AF -----end
 };
 
 struct msm_ois_opcode {

@@ -308,6 +308,7 @@ struct sir_mgmt_msg {
 #define SIR_HAL_WOW_DEL_PTRN               (SIR_HAL_ITC_MSG_TYPES_BEGIN + 83)
 #define SIR_HAL_WOWL_ENTER_REQ             (SIR_HAL_ITC_MSG_TYPES_BEGIN + 84)
 #define SIR_HAL_WMA_ROAM_SYNC_TIMEOUT      (SIR_HAL_ITC_MSG_TYPES_BEGIN + 85)
+#define SIR_HAL_WOWL_ENTER_RSP             (SIR_HAL_ITC_MSG_TYPES_BEGIN + 85)
 #define SIR_HAL_WOWL_EXIT_REQ              (SIR_HAL_ITC_MSG_TYPES_BEGIN + 86)
 #define SIR_HAL_WOWL_EXIT_RSP              (SIR_HAL_ITC_MSG_TYPES_BEGIN + 87)
 /* / PE <-> HAL statistics messages */

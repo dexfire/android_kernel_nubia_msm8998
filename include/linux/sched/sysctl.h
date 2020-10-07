@@ -85,6 +85,13 @@ extern unsigned int sysctl_sched_short_sleep;
 
 #endif /* CONFIG_SCHED_HMP */
 
+#ifdef CONFIG_SCHED_WALT
+extern unsigned int sysctl_sched_use_walt_cpu_util;
+extern unsigned int sysctl_sched_use_walt_task_util;
+extern unsigned int sysctl_sched_walt_init_task_load_pct;
+extern unsigned int sysctl_sched_walt_cpu_high_irqload;
+#endif
+
 #if defined(CONFIG_PREEMPT_TRACER) || defined(CONFIG_IRQSOFF_TRACER)
 extern unsigned int sysctl_preemptoff_tracing_threshold_ns;
 extern unsigned int sysctl_irqsoff_tracing_threshold_ns;
@@ -113,18 +120,6 @@ int sched_proc_update_handler(struct ctl_table *table, int write,
 		void __user *buffer, size_t *length,
 		loff_t *ppos);
 #endif
-
-extern int sched_migrate_notify_proc_handler(struct ctl_table *table,
-		int write, void __user *buffer, size_t *lenp, loff_t *ppos);
-
-extern int sched_hmp_proc_update_handler(struct ctl_table *table,
-		int write, void __user *buffer, size_t *lenp, loff_t *ppos);
-
-extern int sched_boost_handler(struct ctl_table *table, int write,
-			void __user *buffer, size_t *lenp, loff_t *ppos);
-
-extern int sched_window_update_handler(struct ctl_table *table,
-		 int write, void __user *buffer, size_t *lenp, loff_t *ppos);
 
 /*
  *  control realtime throttling:
@@ -159,6 +154,7 @@ static inline unsigned int get_sysctl_sched_cfs_boost(void)
 extern unsigned int sysctl_sched_autogroup_enabled;
 #endif
 
+extern int sysctl_sched_rr_timeslice;
 extern int sched_rr_timeslice;
 
 extern int sched_rr_handler(struct ctl_table *table, int write,

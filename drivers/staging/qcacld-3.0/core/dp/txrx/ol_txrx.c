@@ -6065,7 +6065,6 @@ ol_txrx_mon_tx_data_cb(void *ppdev, void *nbuf_list, uint8_t vdev_id,
 
 		msdu = next_buf;
 	}
-
 	return;
 
 free_buf:
